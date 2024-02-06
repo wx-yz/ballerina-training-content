@@ -9,9 +9,8 @@ configurable string password = ?;
 configurable string databaseName = ?;
 
 service /bank on new graphql:Listener(9094) {
-
-    resource function get accounts() returns Account[]|error {
-        return queryAccountData();
+    resource function get accounts(int? accNumber) returns Account[]|error {
+        return queryAccountData(accNumber);
     }
 }
 
@@ -41,10 +40,15 @@ type DBAccount record {|
     string name;
 |};
 
-function queryAccountData() returns Account[]|error {
+function queryAccountData(int? accNumber) returns Account[]|error {
     mysql:Client db = check new (host, username, password, databaseName);
-    stream<DBAccount, sql:Error?> accountStream = db->query(`SELECT a.acc_number, a.account_type, a.account_holder, a.address, 
-    a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id; `);
+
+    sql:ParameterizedQuery selectQuery = `SELECT a.acc_number, a.account_type, a.account_holder, a.address, 
+    a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id `;
+    if accNumber != () {
+        selectQuery = sql:queryConcat(selectQuery, `WHERE a.acc_number = ${accNumber}`);
+    }
+    stream<DBAccount, sql:Error?> accountStream = db->query(selectQuery);
 
     DBAccount[] dbAccounts = check from DBAccount dbAccount in accountStream
         select dbAccount;
