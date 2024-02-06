@@ -25,7 +25,6 @@ function queryAccountData() returns Account[]|error {
     stream<DBAccount, sql:Error?> accountStream = db->query(`SELECT a.acc_number, a.account_type, a.account_holder, a.address, 
     a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id; `);
 
-    // Process the stream and convert results to Album[] or return error.
     DBAccount[] dbAccounts = check from DBAccount dbAccount in accountStream
         select dbAccount;
     return transform(dbAccounts);
