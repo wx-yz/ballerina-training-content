@@ -3,7 +3,17 @@ import ballerina/graphql;
 service /bank on new graphql:Listener(9090) {
 
     resource function get accounts() returns Account[]|error {
-        return queryAccountData();
+        Account acc1 = {
+            number: "123",
+            accType: "Savings",
+            holder: "John Doe",
+            address: "20A, FM Road, Austin, TX, 73301",
+            openedDate: "2020-01-01",
+            bankEmployee: {id: 1, name: "Mary Jones", position: "Operations Manager"}
+        };
+        Account[] accounts = [];
+        accounts.push(acc1);
+        return accounts;
     }
 }
 
@@ -14,7 +24,7 @@ type BankEmployee record {
 };
 
 type Account record {
-    int number;
+    string number;
     string accType;
     string holder;
     string address;
