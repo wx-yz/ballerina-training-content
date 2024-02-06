@@ -10,5 +10,3 @@ INSERT INTO Accounts(account_type, account_holder, address, opened_date, employe
 INSERT INTO Accounts(account_type, account_holder, address, opened_date, employee_id) VALUES ("FD", "Emily Johnson", "234 Maple Lane Suburbia, FL 13579", "2023-08-16", (SELECT employee_id FROM Employees WHERE name="Mary Jones"));
 INSERT INTO Accounts(account_type, account_holder, address, opened_date, employee_id) VALUES ("IRA", "Sarah Brown", "456 Elm Avenue Smalltown, CA 98765", "2010-10-22", (SELECT employee_id FROM Employees WHERE name="Jennifer Davis"));
 INSERT INTO Accounts(account_type, account_holder, address, opened_date, employee_id) VALUES ("Savings", "Lisa Martinez", "789 Oak Street Cityville, NY 54321", "2022-10-01", (SELECT employee_id FROM Employees WHERE name="John Smith"));
-
-SELECT a.acc_number, a.account_type, a.account_holder, a.address, a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id; 
