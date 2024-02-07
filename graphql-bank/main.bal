@@ -9,8 +9,8 @@ configurable string password = ?;
 configurable string databaseName = ?;
 
 service /bank on new graphql:Listener(9094) {
-    resource function get accounts(int? accNumber) returns Account[]|error {
-        return queryAccountData(accNumber);
+    resource function get accounts(int? accNumber, int? employeeID) returns Account[]|error {
+        return queryAccountData(accNumber, employeeID);
     }
 }
 
@@ -40,13 +40,22 @@ type DBAccount record {|
     string name;
 |};
 
-function queryAccountData(int? accNumber) returns Account[]|error {
+function queryAccountData(int? accNumber, int? employeeID) returns Account[]|error {
     mysql:Client db = check new (host, username, password, databaseName);
 
     sql:ParameterizedQuery selectQuery = `SELECT a.acc_number, a.account_type, a.account_holder, a.address, 
     a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id `;
-    if accNumber != () {
-        selectQuery = sql:queryConcat(selectQuery, `WHERE a.acc_number = ${accNumber}`);
+    if accNumber != () || employeeID != () {
+        selectQuery = sql:queryConcat(selectQuery, `WHERE `);
+        if accNumber != () {
+            selectQuery = sql:queryConcat(selectQuery, `a.acc_number = ${accNumber} `);
+            if employeeID != () {
+                selectQuery = sql:queryConcat(selectQuery, `AND `);
+            }
+        }
+        if employeeID != () {
+            selectQuery = sql:queryConcat(selectQuery, `e.employee_id = ${employeeID}`);
+        }
     }
     stream<DBAccount, sql:Error?> accountStream = db->query(selectQuery);
 
