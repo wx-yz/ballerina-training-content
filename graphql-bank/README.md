@@ -51,7 +51,7 @@ For all the requests the endpoint is  : http://localhost:9094/bank
 
 GraphQL query: 
 
-```json
+```graphql
 query {
   accounts {
     number
@@ -59,7 +59,7 @@ query {
     holder
     address
     openedDate
-		bankEmployee {
+    bankEmployee {
       id
       name
       position
@@ -139,15 +139,15 @@ curl -X POST -H "Content-type: application/json" -d '{ "query": "{ accounts { nu
 
 GraphQL query: 
 
-```json
+```graphql
 query {
-  accounts(accNumber:2) {
+  accounts(accNumber: 2) {
     number
     accType
     holder
     address
     openedDate
-		bankEmployee {
+    bankEmployee {
       id
       name
       position
@@ -191,15 +191,15 @@ curl -X POST -H "Content-type: application/json" -d '{ "query": "{ accounts(accN
 
 GraphQL query: 
 
-```json
+```graphql
 query {
-  accounts(employeeID:1 ) {
+  accounts(employeeID: 1) {
     number
     accType
     holder
     address
     openedDate
-		bankEmployee {
+    bankEmployee {
       id
       name
       position
@@ -256,16 +256,16 @@ curl -X POST -H "Content-type: application/json" -d '{ "query": "{ accounts(empl
 
 GraphQL query: 
 
-```json
+```graphql
 query {
-  accounts(employeeID:1 ) {
+  accounts(employeeID: 1) {
     number
     accType
     holder
     address
     openedDate
-    isLocal(state:"TX")
-		bankEmployee {
+    isLocal(state: "TX")
+    bankEmployee {
       id
       name
       position
