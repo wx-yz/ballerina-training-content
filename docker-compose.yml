@@ -1,0 +1,21 @@
+services:
+    mysql:
+        container_name: ballerina_training
+        image: mysql:8.0
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_USER: user
+            MYSQL_PASSWORD: password
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+            timeout: 20s
+            retries: 10
+        ports:
+            - "3307:3306"
+        volumes:
+            - db_vol:/var/lib/mysql
+            - ./resources/db:/docker-entrypoint-initdb.d:ro
+
+volumes:
+    db_vol:
