@@ -6,7 +6,7 @@ type Person record {
     //2. the value required by the field is an immutable value
     readonly string[] name;
 
-    //the address field is not a readonly field, 
+    // the address field is not a readonly field, 
     // but its type is an intersection with readonly, 
     // which requires the value to be an immutable string array. 
     // Therefore, while the array set to the address field cannot be updated, 
