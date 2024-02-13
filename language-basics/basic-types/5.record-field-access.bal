@@ -38,4 +38,10 @@ public function main() {
     string key = "eCode";
     int|string|boolean|decimal? value = e[key];
     io:println(value); // E1124
+
+    // Field update
+    e.id = 1500;
+    e.department = "HR";
+    e["eCode"] = "E1500";
+    io:println(e); // {"id":1500,"name":"John","manager":false,"department":"HR","salary":1200,"eCode":"E1500"}
 }
