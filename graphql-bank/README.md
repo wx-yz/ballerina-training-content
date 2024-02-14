@@ -22,19 +22,48 @@ The MySQL database holds data about a bank, and it has account details and emplo
 
 [Level 4](https://github.com/anupama-pathirage/ballerina-training-content/tree/graphql-level4/graphql-bank) - Generate dynamic queries based on the fields requested in the query
 
+## Prerequisites
+
+- Install [Ballerina](https://ballerina.io/downloads/)
+- Install [VSCode](https://code.visualstudio.com/download)
+- Install [Ballerina VSCode Plugin](https://marketplace.visualstudio.com/items?itemName=wso2.ballerina)
+
+If you are not having mysql setup: 
+
+- Install [Docker](https://www.docker.com/products/docker-desktop)
+  - Alternatively, install [Rancher Desktop](https://rancherdesktop.io/) which includes Docker and Kubernetes
+
 ## Set up the Database
 
 1. If you are using docker :
 
+  Run docker and start following. 
+  
+    ```bash
+    docker-compose up
+    ```
+
 2. If you are using MySQL DB instance
-Create the sample MySQL database and populate data with the [data.sql](data.sql) script as follows.
+Create the sample MySQL database and populate data with the [init.sql](../resources/init.sql) script as follows.
+
     ```
     mysql -u root -p < /path/to/db.sql
-
     ```
+
 ## Run the code
 
-Execute `bal run` command  within the `graphql-bank` project folder.
+1. Add the following configuration to the `Config.toml` file
+
+    ```toml
+    [graphql_bank]
+    host="localhost"
+    username="root"
+    password="root"
+    databaseName="gq_bank_test"
+    port=3307
+    ```
+
+2.Execute `bal run` command  within the `graphql-bank` project folder.
 
 
 ## Test the service

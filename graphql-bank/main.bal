@@ -32,7 +32,8 @@ type EmployeeInfo readonly & record {|
 |};
 
 type BankEmployee readonly & record {|
-    @graphql:ID int? id;
+    @graphql:ID
+    int? id;
     string? name;
     string? position;
 |};
@@ -93,9 +94,11 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
 
     //Select clause
     boolean isJoin = false;
+    boolean addressAdded = false;
     sql:ParameterizedQuery selectQuery = `SELECT `;
     int i = 0;
     foreach graphql:Field subField in subFields {
+        i = i + 1;
         match subField.getName() {
             "number" => {
                 selectQuery = sql:queryConcat(selectQuery, `a.acc_number`);
@@ -106,8 +109,13 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
             "holder" => {
                 selectQuery = sql:queryConcat(selectQuery, `a.account_holder`);
             }
-            "address" | "isLocal" => {
+            "address"|"isLocal" => {
+                if addressAdded {
+                    continue;
+                }
                 selectQuery = sql:queryConcat(selectQuery, `a.address`);
+                addressAdded = true;
+
             }
             "openedDate" => {
                 selectQuery = sql:queryConcat(selectQuery, `a.opened_date`);
@@ -138,7 +146,7 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
                 }
             }
         }
-        i = i + 1;
+
         if i < subFields.length() {
             selectQuery = sql:queryConcat(selectQuery, `, `);
         }
