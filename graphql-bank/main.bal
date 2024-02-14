@@ -7,61 +7,66 @@ configurable string host = ?;
 configurable string username = ?;
 configurable string password = ?;
 configurable string databaseName = ?;
+configurable int port = ?;
 
+final mysql:Client db = check new (host, username, password, databaseName, port);
+
+@graphql:ServiceConfig {
+    graphiql: {
+        enabled: true
+    }
+}
 service /bank on new graphql:Listener(9094) {
-    resource function get accounts(graphql:Field gqField, int? accNumber, int? employeeID) returns Account[]|error {
+    resource function get accounts(graphql:Field gqField, int? accNumber, @graphql:ID int? employeeID)
+            returns Account[]|error {
         return queryAccountData(gqField, accNumber, employeeID);
     }
 }
 
-type BankEmployee record {
-    int? id;
+type EmployeeInfo readonly & record {|
+    int? number;
+    string? accType;
+    string? holder;
+    string? address;
+    string? openedDate;
+|};
+
+type BankEmployee readonly & record {|
+    @graphql:ID int? id;
     string? name;
     string? position;
+|};
+
+enum State {
+    CA,
+    NY,
+    TX
 };
 
 service class Account {
-    private final int? number;
-    private final string? accType;
-    private final string? holder;
-    private final string? address;
-    private final string? openedDate;
+    private final EmployeeInfo employeeInfo;
     private final BankEmployee bankEmployee;
 
-    function init(int? number, string? accType, string? holder, string? address, string? openedDate, BankEmployee bankEmployee) {
-        self.number = number;
-        self.accType = accType;
-        self.holder = holder;
-        self.address = address;
-        self.openedDate = openedDate;
+    function init(EmployeeInfo employeeInfo, BankEmployee bankEmployee) {
+        self.employeeInfo = employeeInfo;
         self.bankEmployee = bankEmployee;
     }
 
     // Each resource method becomes a field of the `Account` type.
-    resource function get number() returns int? {
-        return self.number;
-    }
-    resource function get accType() returns string? {
-        return self.accType;
-    }
-    resource function get holder() returns string? {
-        return self.holder;
-    }
+    resource function get number() returns int? => self.employeeInfo.number;
 
-    resource function get address() returns string? {
-        return self.address;
-    }
+    resource function get accType() returns string? => self.employeeInfo.accType;
 
-    resource function get openedDate() returns string? {
-        return self.openedDate;
-    }
+    resource function get holder() returns string? => self.employeeInfo.holder;
 
-    resource function get bankEmployee() returns BankEmployee {
-        return self.bankEmployee;
-    }
+    resource function get address() returns string? => self.employeeInfo.address;
 
-    resource function get isLocal(string state) returns boolean? {
-        string? address = self.address;
+    resource function get openedDate() returns string? => self.employeeInfo.openedDate;
+
+    resource function get bankEmployee() returns BankEmployee => self.bankEmployee;
+
+    resource function get isLocal(State state) returns boolean? {
+        string? address = self.employeeInfo.address;
         if address is () {
             return false;
         }
@@ -81,8 +86,6 @@ type DBAccount record {|
 |};
 
 function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID) returns Account[]|error {
-    mysql:Client db = check new (host, username, password, databaseName);
-
     graphql:Field[]? subFields = gqField.getSubfields();
     if subFields is () {
         return error("Invalid query with no sub fields");
@@ -91,22 +94,23 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
     //Select clause
     boolean isJoin = false;
     sql:ParameterizedQuery selectQuery = `SELECT `;
+    int i = 0;
     foreach graphql:Field subField in subFields {
         match subField.getName() {
             "number" => {
                 selectQuery = sql:queryConcat(selectQuery, `a.acc_number`);
             }
             "accType" => {
-                selectQuery = sql:queryConcat(selectQuery, `, a.account_type`);
+                selectQuery = sql:queryConcat(selectQuery, `a.account_type`);
             }
             "holder" => {
-                selectQuery = sql:queryConcat(selectQuery, `, a.account_holder`);
+                selectQuery = sql:queryConcat(selectQuery, `a.account_holder`);
             }
-            "address" => {
-                selectQuery = sql:queryConcat(selectQuery, `, a.address`);
+            "address" | "isLocal" => {
+                selectQuery = sql:queryConcat(selectQuery, `a.address`);
             }
             "openedDate" => {
-                selectQuery = sql:queryConcat(selectQuery, `,a.opened_date`);
+                selectQuery = sql:queryConcat(selectQuery, `a.opened_date`);
             }
             "bankEmployee" => {
                 graphql:Field[]? employeeSubFields = subField.getSubfields();
@@ -114,29 +118,38 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
                     return error("Invalid query with no employee sub fields");
                 }
                 isJoin = true;
+                int j = 0;
                 foreach graphql:Field empSubField in employeeSubFields {
                     match empSubField.getName() {
                         "id" => {
-                            selectQuery = sql:queryConcat(selectQuery, `,e.employee_id`);
+                            selectQuery = sql:queryConcat(selectQuery, `e.employee_id`);
                         }
                         "name" => {
-                            selectQuery = sql:queryConcat(selectQuery, `,e.name`);
+                            selectQuery = sql:queryConcat(selectQuery, `e.name`);
                         }
                         "position" => {
-                            selectQuery = sql:queryConcat(selectQuery, `,e.position`);
+                            selectQuery = sql:queryConcat(selectQuery, `e.position`);
                         }
+                    }
+                    j = j + 1;
+                    if j < employeeSubFields.length() {
+                        selectQuery = sql:queryConcat(selectQuery, `, `);
                     }
                 }
             }
         }
+        i = i + 1;
+        if i < subFields.length() {
+            selectQuery = sql:queryConcat(selectQuery, `, `);
+        }
     }
     //From Clause
-    selectQuery = sql:queryConcat(selectQuery, ` from Accounts a `);
+    selectQuery = sql:queryConcat(selectQuery, ` from Accounts as a `);
     if isJoin {
-        selectQuery = sql:queryConcat(selectQuery, ` LEFT JOIN Employees e on a.employee_id  = e.employee_id `);
+        selectQuery = sql:queryConcat(selectQuery, ` LEFT JOIN Employees as e on a.employee_id = e.employee_id `);
     }
     //Where clause
-    if accNumber != () || employeeID != () {
+    if accNumber !is () || employeeID !is () {
         selectQuery = sql:queryConcat(selectQuery, `WHERE `);
         if accNumber != () {
             selectQuery = sql:queryConcat(selectQuery, `a.acc_number = ${accNumber} `);
@@ -156,7 +169,17 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
 }
 
 function transform(DBAccount[] dbAccount) returns Account[] => from var dbAccountItem in dbAccount
-    select new Account(dbAccountItem?.acc_number, dbAccountItem?.account_type, dbAccountItem?.account_holder,
-        dbAccountItem?.address, dbAccountItem?.opened_date,
-        {id: dbAccountItem?.employee_id, position: dbAccountItem?.position, name: dbAccountItem?.name}
+    select new Account(
+        {
+            number: dbAccountItem?.acc_number,
+            accType: dbAccountItem?.account_type,
+            holder: dbAccountItem?.account_holder,
+            address: dbAccountItem?.address,
+            openedDate: dbAccountItem?.opened_date
+        },
+        {
+            id: dbAccountItem?.employee_id,
+            position: dbAccountItem?.position,
+            name: dbAccountItem?.name
+        }
     );
