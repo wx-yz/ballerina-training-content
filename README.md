@@ -159,7 +159,7 @@ Response:
 CURL command  to request the same:
 
 ```bash
-curl -X POST -H "Content-type: application/json" -d '{"query": "{ accounts { number accType holder address openedDate bankEmployee { id name position }}}"}' 'http://localhost:9094/bank'
+curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts { number accType holder address openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
 ```
 
 ### Sample Request 2:  Get the details of a specific account ID
@@ -211,7 +211,7 @@ Response:
 CURL command  to request the same:
 
 ```bash
-curl -X POST -H "Content-type: application/json" -d '{"query": "{ accounts(accNumber:2) { number accType holder address openedDate bankEmployee { id name position }}}"}' 'http://localhost:9094/bank'
+curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts(accNumber:2) { number accType holder address openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
 ```
 
 ### Sample Request 3:  Get the details of accounts attached to a given employee
@@ -275,7 +275,7 @@ Response:
 CURL command  to request the same:
 
 ```bash
-curl -X POST -H "Content-type: application/json" -d '{"query": "{ accounts(employeeID:1) { number accType holder address openedDate bankEmployee { id name position }}}"}' 'http://localhost:9094/bank'
+curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts(employeeID:1) { number accType holder address openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
 ```
 
 ### Sample Request 4:  Get the details of accounts with input arguments in the fields
@@ -293,7 +293,7 @@ query {
     holder
     address
     openedDate
-    isLocal(state: "TX")
+    isLocal(state: TX)
     bankEmployee {
       id
       name
@@ -343,5 +343,5 @@ Response:
 CURL command  to request the same:
 
 ```bash
-curl -X POST -H "Content-type: application/json" -d '{"query": "{ accounts(employeeID:1) { number accType holder address isLocal(state: \ "TX\") openedDate bankEmployee { id name position }}}"}' 'http://localhost:9094/bank'
+curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts(employeeID:1) { number accType holder address isLocal(state: TX) openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
 ```
