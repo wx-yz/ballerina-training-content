@@ -39,9 +39,9 @@ If you are not having mysql setup:
 
   Run docker and start following. 
   
-    ```bash
+  ```
     docker-compose up
-    ```
+  ``` 
 
 2. If you are using MySQL DB instance
 Create the sample MySQL database and populate data with the [init.sql](../resources/init.sql) script as follows.
