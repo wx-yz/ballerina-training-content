@@ -7,7 +7,7 @@ The MySQL database holds data about a bank, and it has account details and emplo
 * details of a specific account
 * accounts under each bank employee
 
-<img src="ballerina-graphql-service.png"/>
+<img src="resources/ballerina-graphql-service.png"/>
 
 
 ## Repo Details 
