@@ -23,14 +23,6 @@ service /bank on new graphql:Listener(9094) {
     }
 }
 
-type EmployeeInfo readonly & record {|
-    int? number;
-    string? accType;
-    string? holder;
-    string? address;
-    string? openedDate;
-|};
-
 type BankEmployee readonly & record {|
     @graphql:ID
     int? id;
@@ -38,41 +30,49 @@ type BankEmployee readonly & record {|
     string? position;
 |};
 
-enum State {
-    CA,
-    NY,
-    TX
-};
-
 service class Account {
-    private final EmployeeInfo employeeInfo;
+    private final int? number;
+    private final string? accType;
+    private final string? holder;
+    private final string? address;
+    private final string? openedDate;
     private final BankEmployee bankEmployee;
 
-    function init(EmployeeInfo employeeInfo, BankEmployee bankEmployee) {
-        self.employeeInfo = employeeInfo;
+    function init(int? number, string? accType, string? holder, string? address, string? openedDate, BankEmployee bankEmployee) {
+        self.number = number;
+        self.accType = accType;
+        self.holder = holder;
+        self.address = address;
+        self.openedDate = openedDate;
         self.bankEmployee = bankEmployee;
     }
 
     // Each resource method becomes a field of the `Account` type.
-    resource function get number() returns int? => self.employeeInfo.number;
+    resource function get number() returns int? => self.number;
 
-    resource function get accType() returns string? => self.employeeInfo.accType;
+    resource function get accType() returns string? => self.accType;
 
-    resource function get holder() returns string? => self.employeeInfo.holder;
+    resource function get holder() returns string? => self.holder;
 
-    resource function get address() returns string? => self.employeeInfo.address;
+    resource function get address() returns string? => self.address;
 
-    resource function get openedDate() returns string? => self.employeeInfo.openedDate;
+    resource function get openedDate() returns string? => self.openedDate;
 
     resource function get bankEmployee() returns BankEmployee => self.bankEmployee;
 
     resource function get isLocal(State state) returns boolean? {
-        string? address = self.employeeInfo.address;
+        string? address = self.address;
         if address is () {
             return false;
         }
         return address.includes(state);
     }
+}
+
+enum State {
+    TX,
+    CA,
+    NY
 }
 
 type DBAccount record {|
@@ -178,16 +178,15 @@ function queryAccountData(graphql:Field gqField, int? accNumber, int? employeeID
 
 function transform(DBAccount[] dbAccount) returns Account[] => from var dbAccountItem in dbAccount
     select new Account(
-        {
-            number: dbAccountItem?.acc_number,
-            accType: dbAccountItem?.account_type,
-            holder: dbAccountItem?.account_holder,
-            address: dbAccountItem?.address,
-            openedDate: dbAccountItem?.opened_date
-        },
+        dbAccountItem?.acc_number,
+        dbAccountItem?.account_type,
+        dbAccountItem?.account_holder,
+        dbAccountItem?.address,
+        dbAccountItem?.opened_date,
         {
             id: dbAccountItem?.employee_id,
             position: dbAccountItem?.position,
             name: dbAccountItem?.name
         }
     );
+

@@ -343,5 +343,5 @@ Response:
 CURL command  to request the same:
 
 ```bash
-curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts(employeeID:1) { number accType holder address isLocal(state: TX) openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
+curl -X POST -H "Content-type: application/json" -d "{\"query\": \"{ accounts(employeeID:1) { number accType holder address isLocal(state:TX) openedDate bankEmployee { id name position }}}\"}" "http://localhost:9094/bank"
 ```
