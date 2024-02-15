@@ -17,14 +17,13 @@ final mysql:Client db = check new (host, username, password, databaseName, port)
     }
 }
 service /bank on new graphql:Listener(9094) {
-    resource function get accounts(graphql:Field gqField, int? accNumber, @graphql:ID int? employeeID)
+    resource function get accounts(graphql:Field gqField, int? accNumber, int? employeeID)
             returns Account[]|error {
         return queryAccountData(gqField, accNumber, employeeID);
     }
 }
 
 type BankEmployee readonly & record {|
-    @graphql:ID
     int? id;
     string? name;
     string? position;
