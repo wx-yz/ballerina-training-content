@@ -7,14 +7,22 @@ configurable string host = ?;
 configurable string username = ?;
 configurable string password = ?;
 configurable string databaseName = ?;
+configurable int port = ?;
 
+final mysql:Client db = check new (host, username, password, databaseName, port);
+
+@graphql:ServiceConfig {
+    graphiql: {
+        enabled: true
+    }
+}
 service /bank on new graphql:Listener(9094) {
     resource function get accounts(int? accNumber, int? employeeID) returns Account[]|error {
         return queryAccountData(accNumber, employeeID);
     }
 }
 
-type BankEmployee record {
+type BankEmployee readonly & record {
     int id;
     string name;
     string position;
@@ -60,9 +68,15 @@ service class Account {
         return self.bankEmployee;
     }
 
-    resource function get isLocal(string state) returns boolean {
+    resource function get isLocal(State state) returns boolean {
         return self.address.includes(state);
     }
+}
+
+enum State {
+    TX,
+    CA,
+    NY
 }
 
 type DBAccount record {|
@@ -77,10 +91,10 @@ type DBAccount record {|
 |};
 
 function queryAccountData(int? accNumber, int? employeeID) returns Account[]|error {
-    mysql:Client db = check new (host, username, password, databaseName);
-
     sql:ParameterizedQuery selectQuery = `SELECT a.acc_number, a.account_type, a.account_holder, a.address, 
     a.opened_date, e.employee_id, e.position, e.name from Accounts a LEFT JOIN Employees e on a.employee_id  = e.employee_id `;
+
+    // Where clause
     if accNumber != () || employeeID != () {
         selectQuery = sql:queryConcat(selectQuery, `WHERE `);
         if accNumber != () {
@@ -102,7 +116,15 @@ function queryAccountData(int? accNumber, int? employeeID) returns Account[]|err
 }
 
 function transform(DBAccount[] dbAccount) returns Account[] => from var dbAccountItem in dbAccount
-    select new Account(dbAccountItem.acc_number, dbAccountItem.account_type, dbAccountItem.account_holder,
-        dbAccountItem.address, dbAccountItem.opened_date,
-        {id: dbAccountItem.employee_id, position: dbAccountItem.position, name: dbAccountItem.name}
+    select new Account(
+        dbAccountItem.acc_number,
+        dbAccountItem.account_type,
+        dbAccountItem.account_holder,
+        dbAccountItem.address,
+        dbAccountItem.opened_date,
+        {
+            id: dbAccountItem.employee_id,
+            position: dbAccountItem.position,
+            name: dbAccountItem.name
+        }
     );
