@@ -27,7 +27,6 @@ function init() {
 // }
 
 public function main() {
-    // This will not be executed because the init function returns an error.
     io:println("Hello, World!");
     io:println(name);
 }
