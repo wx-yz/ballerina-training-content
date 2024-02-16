@@ -18,6 +18,7 @@ map<OrderStatus> orderStatus = {};
 int orderId = 1000; // just for demonstration
 
 service on new http:Listener(8080) {
+    
     resource function post 'order(Order newOrder) returns http:Created|http:BadRequest? {
         // ...
         string orderId = nextOrderId(); // Accessing mutable state
