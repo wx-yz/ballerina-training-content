@@ -66,6 +66,7 @@ type ReservationDetails record {
     int totalGuests;
     string[] amenities;
     decimal dayRate;
+
 };
 
 type ReservationRequest record {
@@ -89,6 +90,9 @@ type ReservationSummary record {
     int totalGuests;
     decimal totalCost;
     string additionalServices;
+    decimal CURRENCY_RATE;
+    decimal CURRENCY_VAL;
+    decimal LOCAL_CURRENCY_VAL;
 };
 
 type Reservation record {
@@ -110,7 +114,10 @@ function transform(ReservationRequest reservationRequest) returns Reservation =>
         roomType: reservationRequest.reservationDetails.roomType,
         totalGuests: reservationRequest.reservationDetails.totalGuests,
         totalCost: reservationRequest.reservationDetails.totalNights * reservationRequest.reservationDetails.dayRate,
-        additionalServices: string0:'join(",", ...reservationRequest.reservationDetails.amenities)
+        additionalServices: string0:'join(",", ...reservationRequest.reservationDetails.amenities),
+        CURRENCY_RATE: 0.014,
+        CURRENCY_VAL: 24,
+        LOCAL_CURRENCY_VAL: 336
     }
 };
 
