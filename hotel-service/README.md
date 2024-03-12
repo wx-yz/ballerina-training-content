@@ -64,7 +64,7 @@ service /hotel on new http:Listener(9090) {
 
 ### Try out
 
-1. Send a request with sample palyload and observe it returns `202 Accepted` with empty body.
+1. Send a request with [the sample payload](https://github.com/anupama-pathirage/ballerina-training-content/tree/rest-service/hotel-service#valid-input-with-1-reservation) and observe it returns `202 Accepted` with empty body.
 2. Send invalid payload and observe `400 bad request` response on the failure of payload data binding. 
 
 
