@@ -91,7 +91,28 @@ service /hotel on new http:Listener(9090) {
 }
 ```
 
-## Task 3 - Add GET resource 
+## Task 3 - Do the transformation of payload
+
+```ballerina
+function transform(ReservationRequest reservationRequest) returns Reservation => {
+    reservationId: reservationRequest.reservationId,
+    user: {
+        name: reservationRequest.guest.firstName + " " + reservationRequest.guest.lastName,
+        email: reservationRequest.guest.email,
+        phoneNumber: reservationRequest.guest.phoneNumber
+    },
+    reservationSummary: {
+        checkInDate: reservationRequest.reservationDetails.checkInDate,
+        checkOutDate: reservationRequest.reservationDetails.checkOutDate,
+        roomType: reservationRequest.reservationDetails.roomType,
+        totalGuests: reservationRequest.reservationDetails.totalGuests,
+        totalCost: reservationRequest.reservationDetails.totalNights * reservationRequest.reservationDetails.dayRate,
+        additionalServices: string0:'join(",", ...reservationRequest.reservationDetails.amenities)
+    }
+};
+```
+
+## Task 4 - Add GET resource 
 
 ```ballerina
 resource function get bookings() returns Reservation[] {
@@ -99,7 +120,9 @@ resource function get bookings() returns Reservation[] {
 }
 ```
 
-## Task 4  - Add table and http client for rooms service.
+## Task 5  - Add table and http client for rooms service.
+
+Make sure the `room-service` is up and running. 
 
 Note : Make reservationId of Reservation readonly.
 
@@ -116,7 +139,7 @@ table<Reservation> key(reservationId) reservationsTable = table [];
 http:Client roomsClient = check new ("http://localhost:8080/rooms");
 ```
 
-## Task 5 - Iterate incoming payload, transform , add to table and invoke room service
+## Task 6 - Iterate incoming payload, transform , add to table and invoke room service
 
 
 Call to room service
