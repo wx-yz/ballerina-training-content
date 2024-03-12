@@ -46,7 +46,10 @@ Sample input type :
       "Free Wi-Fi",
       "Breakfast Included"
     ],
-    "dayRate": 600.00
+    "dayRate": 600.00,
+CURRENCY_RATE: 0.014,
+CURRENCY_VAL: 25,
+LOCAL_CURRENCY_VAL: 0.84
   }
 }
 ```
